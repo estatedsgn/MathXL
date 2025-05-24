@@ -4,14 +4,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.mycompany</groupId>
-    <artifactId>MathXl</artifactId> <!-- Изменено -->
+    <artifactId>MathXl</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <exec.mainClass>com.mycompany.mathxl.Main</exec.mainClass>
     </properties>
 
     <dependencies>
@@ -40,12 +39,6 @@
             <artifactId>javafx-fxml</artifactId>
             <version>17.0.2</version>
         </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-graphics</artifactId>
-            <version>17.0.2</version>
-            <type>jar</type>
-        </dependency>
     </dependencies>
 
     <build>
@@ -62,7 +55,33 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <mainClass>com.mycompany.mathxl.Main</mainClass> <!-- Изменено -->
+                            <!-- УКАЗАН НОВЫЙ КЛАСС -->
+                            <mainClass>com.mycompany.mathxl.MathXL</mainClass>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Maven Shade Plugin для Fat Jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <!-- УКАЗАН НОВЫЙ КЛАСС -->
+                                    <mainClass>com.mycompany.mathxl.MathXL</mainClass>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                            <createDependencyReducedPom>true</createDependencyReducedPom>
                         </configuration>
                     </execution>
                 </executions>
