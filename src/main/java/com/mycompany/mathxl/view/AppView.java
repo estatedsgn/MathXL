@@ -7,33 +7,93 @@
  *
  * @author nyaku
  */
-package com.mycompany.mathxl.view; // Изменено
-
+package com.mycompany.mathxl.view;
 import com.mycompany.mathxl.controller.AppController;
-import javafx.geometry.Insets;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 
-public class AppView {
+import javax.swing.*;
+import java.awt.event.*;
+import java.io.File;
+import java.util.Map;
 
-    public void show(Stage primaryStage) {
-        Button importBtn = new Button("Импорт из Excel");
-        Button exportBtn = new Button("Экспорт в Excel");
-        Button exitBtn = new Button("Выход");
+public class AppView extends JFrame {
+    private JButton inputButton;
+    private JButton processButton;
+    private JButton writeButton;
+    private JTextField filePathField;
+    private AppController controller;
 
-        VBox root = new VBox(10, importBtn, exportBtn, exitBtn);
-        root.setPadding(new Insets(20));
+    public AppView() {
+        super("Статистика из Excel");
+        setSize(600, 200);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
+        setLocationRelativeTo(null);
 
-        Scene scene = new Scene(root, 300, 200);
-        primaryStage.setScene(scene);
-        primaryStage.setTitle("MathXl — Статистика из Excel"); // Изменено
-        primaryStage.show();
+        filePathField = new JTextField();
+        filePathField.setEditable(false);
 
-        AppController controller = new AppController(primaryStage);
-        importBtn.setOnAction(controller::handleImport);
-        exportBtn.setOnAction(controller::handleExport);
-        exitBtn.setOnAction(e -> System.exit(0));
+        inputButton = new JButton("Прочитать данные");
+        processButton = new JButton("Обработать данные");
+        writeButton = new JButton("Записать данные в файл");
+
+        processButton.setEnabled(false);
+        writeButton.setEnabled(false);
+
+        add(filePathField);
+        add(inputButton);
+        add(processButton);
+        add(writeButton);
+
+        controller = new AppController();
+
+        // Обработчики событий
+        inputButton.addActionListener(this::handleImport);
+        processButton.addActionListener(this::handleProcess);
+        writeButton.addActionListener(this::handleExport);
+    }
+
+    private void handleImport(ActionEvent e) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            filePathField.setText(file.getAbsolutePath());
+
+            try {
+                controller.loadExcelData(file.getAbsolutePath());
+                processButton.setEnabled(true);
+                JOptionPane.showMessageDialog(this, "Данные успешно загружены.");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Ошибка импорта: " + ex.getMessage(), "Ошибка", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void handleProcess(ActionEvent e) {
+        if (controller.hasData()) {
+            controller.calculateStats();
+            JOptionPane.showMessageDialog(this, "Статистика рассчитана.");
+            writeButton.setEnabled(true);
+        } else {
+            JOptionPane.showMessageDialog(this, "Нет данных для обработки.", "Ошибка", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void handleExport(ActionEvent e) {
+        if (controller.hasStats()) {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                String outputPath = fileChooser.getSelectedFile().getAbsolutePath() + "/output.xlsx";
+                try {
+                    controller.exportStats(outputPath);
+                    JOptionPane.showMessageDialog(this, "Результат сохранён в: " + outputPath);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Ошибка экспорта: " + ex.getMessage(), "Ошибка", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Нет данных для экспорта.", "Ошибка", JOptionPane.ERROR_MESSAGE);
+        }
     }
 }

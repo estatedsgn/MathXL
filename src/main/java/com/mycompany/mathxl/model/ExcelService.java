@@ -7,23 +7,19 @@
  *
  * @author nyaku
  */
-package com.mycompany.mathxl.model; // Изменено
+package com.mycompany.mathxl.model;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 public class ExcelService {
-
     public static Map<String, List<Double>> importFromExcel(String filePath) throws IOException {
         Map<String, List<Double>> result = new LinkedHashMap<>();
 
-        try (FileInputStream fis = new FileInputStream(new File(filePath));
+        try (FileInputStream fis = new FileInputStream(filePath);
              Workbook workbook = new XSSFWorkbook(fis)) {
 
             for (Sheet sheet : workbook) {

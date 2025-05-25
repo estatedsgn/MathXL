@@ -7,79 +7,37 @@
  *
  * @author nyaku
  */
-package com.mycompany.mathxl.controller; // Изменено
+package com.mycompany.mathxl.controller;
 
-import javafx.event.ActionEvent;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import com.mycompany.mathxl.model.ExcelService; // Изменено
-import com.mycompany.mathxl.model.StatsCalculator; // Изменено
+import com.mycompany.mathxl.model.ExcelService;
+import com.mycompany.mathxl.model.StatsCalculator;
 
-import java.io.File;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class AppController {
+    private Map<String, List<Double>> importedData;
+    private Map<String, Map<String, Object>> calculatedStats;
 
-    private final Stage stage;
-    private List<Double> importedData;
-
-    public AppController(Stage stage) {
-        this.stage = stage;
+    public void loadExcelData(String filePath) throws Exception {
+        importedData = ExcelService.importFromExcel(filePath);
+        calculatedStats = new LinkedHashMap<>();
     }
 
-    public void handleImport(ActionEvent event) {
-        FileChooser fc = new FileChooser();
-        fc.setTitle("Выберите Excel-файл");
-        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel Files", "*.xlsx"));
-        File file = fc.showOpenDialog(stage);
-
-        if (file != null) {
-            try {
-                Map<String, List<Double>> data = ExcelService.importFromExcel(file.getAbsolutePath());
-                importedData = data.values().iterator().next(); // Берём первую вкладку
-                showAlert("Файл загружен", "Данные успешно прочитаны!");
-            } catch (Exception e) {
-                showError("Ошибка импорта", e.getMessage());
-            }
+    public void calculateStats() {
+        for (Map.Entry<String, List<Double>> entry : importedData.entrySet()) {
+            calculatedStats.put(entry.getKey(), StatsCalculator.calculateAllStats(entry.getValue()));
         }
     }
 
-    public void handleExport(ActionEvent event) {
-        if (importedData == null || importedData.isEmpty()) {
-            showError("Ошибка", "Нет данных для экспорта");
-            return;
-        }
-
-        FileChooser fc = new FileChooser();
-        fc.setTitle("Сохранить как");
-        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel Files", "*.xlsx"));
-        File file = fc.showSaveDialog(stage);
-
-        if (file != null) {
-            try {
-                Map<String, Object> stats = StatsCalculator.calculateAllStats(importedData);
-                ExcelService.exportToExcel(Map.of("Статистика", stats), file.getAbsolutePath());
-                showAlert("Готово", "Статистика сохранена в Excel!");
-            } catch (Exception e) {
-                showError("Ошибка экспорта", e.getMessage());
-            }
-        }
+    public void exportStats(String outputPath) throws Exception {
+        ExcelService.exportToExcel(calculatedStats, outputPath);
     }
 
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.showAndWait();
+    public boolean hasData() {
+        return importedData != null && !importedData.isEmpty();
     }
 
-    private void showError(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR, message, ButtonType.OK);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.showAndWait();
+    public boolean hasStats() {
+        return calculatedStats != null && !calculatedStats.isEmpty();
     }
 }

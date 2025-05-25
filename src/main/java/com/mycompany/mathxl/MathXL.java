@@ -11,18 +11,21 @@ package com.mycompany.mathxl;
 
 
 import com.mycompany.mathxl.view.AppView;
-import javafx.application.Application;
-import javafx.stage.Stage;
 
-public class MathXL extends Application {
 
-    @Override
-    public void start(Stage primaryStage) {
-        AppView view = new AppView();
-        view.show(primaryStage);
-    }
+import com.mycompany.mathxl.controller.AppController;
 
+
+
+import com.mycompany.mathxl.view.AppView;
+
+import javax.swing.*;
+
+public class MathXL {
     public static void main(String[] args) {
-        launch(args);
+        SwingUtilities.invokeLater(() -> {
+            AppView view = new AppView();
+            view.setVisible(true);
+        });
     }
 }
