@@ -15,29 +15,27 @@ import com.mycompany.mathxl.model.StatsCalculator;
 import java.util.*;
 
 public class AppController {
-    private Map<String, List<Double>> importedData;
-    private Map<String, Map<String, Object>> calculatedStats;
+    private Map<String, Map<String, List<Double>>> importedData;
+    private Map<String, Map<String, Map<String, Object>>> calculatedStats;
+    private boolean dataLoaded = false;
 
     public void loadExcelData(String filePath) throws Exception {
         importedData = ExcelService.importFromExcel(filePath);
-        calculatedStats = new LinkedHashMap<>();
+        dataLoaded = true;
     }
 
-    public void calculateStats() {
-        for (Map.Entry<String, List<Double>> entry : importedData.entrySet()) {
-            calculatedStats.put(entry.getKey(), StatsCalculator.calculateAllStats(entry.getValue()));
-        }
+    public List<String> getAvailableSheets() {
+        if (importedData == null) return Collections.emptyList();
+        return new ArrayList<>(importedData.keySet());
     }
 
-    public void exportStats(String outputPath) throws Exception {
+    public void processData(String sheetName) {
+        Map<String, List<Double>> sheetData = importedData.get(sheetName);
+        calculatedStats = new HashMap<>();
+        calculatedStats.put(sheetName, StatsCalculator.calculateAllStatsForColumns(sheetData));
+    }
+
+    public void exportData(String outputPath) throws Exception {
         ExcelService.exportToExcel(calculatedStats, outputPath);
-    }
-
-    public boolean hasData() {
-        return importedData != null && !importedData.isEmpty();
-    }
-
-    public boolean hasStats() {
-        return calculatedStats != null && !calculatedStats.isEmpty();
     }
 }

@@ -10,21 +10,18 @@ package com.mycompany.mathxl;
  */
 
 
-import com.mycompany.mathxl.view.AppView;
-
-
+import com.mycompany.mathxl.view.StatsView;
 import com.mycompany.mathxl.controller.AppController;
 
 
 
-import com.mycompany.mathxl.view.AppView;
 
 import javax.swing.*;
 
 public class MathXL {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            AppView view = new AppView();
+            StatsView view = new StatsView();
             view.setVisible(true);
         });
     }
