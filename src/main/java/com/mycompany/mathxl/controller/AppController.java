@@ -44,18 +44,18 @@ public class AppController {
         Map<String, List<Double>> sheetData = importedData.get(selectedSheet);
         List<String> columnNames = new ArrayList<>(sheetData.keySet());
 
-        // Расчёт статистики для каждого столбца
+
         Map<String, Object> singleColumnStats = new LinkedHashMap<>();
         for (String columnName : columnNames) {
             List<Double> data = sheetData.get(columnName);
             if (data.size() < 2) {
-                continue; // Пропускаем только если данных меньше 2
+                continue;
             }
             singleColumnStats.putAll(StatsCalculator.calculateSingleColumnStats(columnName, data));
         }
         calculatedStats.put("Статистика", singleColumnStats);
 
-        // Расчёт ковариации между всеми парами столбцов
+
         Map<String, Object> covarianceStats = new LinkedHashMap<>();
         for (int i = 0; i < columnNames.size(); i++) {
             for (int j = 0; j < columnNames.size(); j++) {

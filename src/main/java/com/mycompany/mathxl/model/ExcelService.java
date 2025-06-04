@@ -51,7 +51,7 @@ public class ExcelService {
                                     try {
                                         value = Double.parseDouble(cell.getStringCellValue().trim());
                                     } catch (NumberFormatException e) {
-                                        continue; // Пропускаем ячейки с некорректными числами
+                                        continue;
                                     }
                                     break;
                                 case FORMULA:

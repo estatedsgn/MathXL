@@ -90,7 +90,7 @@ public class StatsView extends JFrame {
         if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             File dir = fc.getSelectedFile();
             try {
-                controller.exportData(dir.getAbsolutePath(), true); // true = отдельные файлы
+                controller.exportData(dir.getAbsolutePath(), true);
                 JOptionPane.showMessageDialog(this, "Данные экспортированы");
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Ошибка экспорта: " + ex.getMessage(), "Ошибка", JOptionPane.ERROR_MESSAGE);
