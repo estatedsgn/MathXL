@@ -11,7 +11,7 @@ package com.mycompany.mathxl.view;
 
 import com.mycompany.mathxl.controller.AppController;
 import javax.swing.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
 import java.io.File;
 
 public class StatsView extends JFrame {
@@ -30,7 +30,7 @@ public class StatsView extends JFrame {
         filePathField.setEditable(false);
 
         importBtn = new JButton("Импорт");
-        processBtn = new JButton("Рассчитать");
+        processBtn = new JButton("Обработать");
         exportBtn = new JButton("Экспорт");
         sheetSelector = new JComboBox<>();
 
@@ -72,12 +72,13 @@ public class StatsView extends JFrame {
     private void handleProcess(ActionEvent e) {
         String selectedSheet = (String) sheetSelector.getSelectedItem();
         if (selectedSheet == null) {
-            JOptionPane.showMessageDialog(this, "Выберите лист для обработки", "Ошибка", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Выберите лист", "Ошибка", JOptionPane.WARNING_MESSAGE);
             return;
         }
+
         try {
             controller.processData(selectedSheet);
-            JOptionPane.showMessageDialog(this, "Расчёт завершён");
+            JOptionPane.showMessageDialog(this, "Статистика рассчитана");
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Ошибка расчёта: " + ex.getMessage(), "Ошибка", JOptionPane.ERROR_MESSAGE);
         }
@@ -85,11 +86,12 @@ public class StatsView extends JFrame {
 
     private void handleExport(ActionEvent e) {
         JFileChooser fc = new JFileChooser();
+        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File file = fc.getSelectedFile();
+            File dir = fc.getSelectedFile();
             try {
-                controller.exportData(file.getAbsolutePath());
-                JOptionPane.showMessageDialog(this, "Данные экспортированы в: " + file.getAbsolutePath());
+                controller.exportData(dir.getAbsolutePath(), true); // true = отдельные файлы
+                JOptionPane.showMessageDialog(this, "Данные экспортированы");
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Ошибка экспорта: " + ex.getMessage(), "Ошибка", JOptionPane.ERROR_MESSAGE);
             }

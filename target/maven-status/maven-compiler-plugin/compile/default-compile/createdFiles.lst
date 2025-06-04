@@ -1,0 +1,6 @@
+com\mycompany\mathxl\controller\AppController.class
+com\mycompany\mathxl\model\ExcelService.class
+com\mycompany\mathxl\model\StatsCalculator.class
+com\mycompany\mathxl\model\ExcelService$1.class
+com\mycompany\mathxl\MathXL.class
+com\mycompany\mathxl\view\StatsView.class

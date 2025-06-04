@@ -16,41 +16,115 @@ import java.io.*;
 import java.util.*;
 
 public class ExcelService {
-    public static Map<String, List<Double>> importFromExcel(String filePath) throws IOException {
-        Map<String, List<Double>> result = new LinkedHashMap<>();
-
+    public static Map<String, Map<String, List<Double>>> importFromExcel(String filePath) throws IOException {
+        Map<String, Map<String, List<Double>>> result = new LinkedHashMap<>();
         try (FileInputStream fis = new FileInputStream(filePath);
              Workbook workbook = new XSSFWorkbook(fis)) {
 
             for (Sheet sheet : workbook) {
-                List<Double> values = new ArrayList<>();
-                for (Row row : sheet) {
-                    for (Cell cell : row) {
-                        if (cell.getCellType() == CellType.NUMERIC) {
-                            values.add(cell.getNumericCellValue());
+                Map<String, List<Double>> columns = new LinkedHashMap<>();
+                Row headerRow = sheet.getRow(sheet.getFirstRowNum());
+
+                for (int col = 0; col < headerRow.getLastCellNum(); col++) {
+                    Cell cell = headerRow.getCell(col);
+                    if (cell != null && cell.getCellType() == CellType.STRING) {
+                        String colName = cell.getStringCellValue().trim();
+                        columns.put(colName, new ArrayList<>());
+                    }
+                }
+
+                for (int rowIdx = sheet.getFirstRowNum() + 1; rowIdx <= sheet.getLastRowNum(); rowIdx++) {
+                    Row row = sheet.getRow(rowIdx);
+                    if (row == null) continue;
+
+                    for (int col = 0; col < headerRow.getLastCellNum(); col++) {
+                        Cell cell = row.getCell(col);
+                        if (cell != null) {
+                            String colName = headerRow.getCell(col).getStringCellValue().trim();
+                            double value;
+
+                            switch (cell.getCellType()) {
+                                case NUMERIC:
+                                    value = cell.getNumericCellValue();
+                                    break;
+                                case STRING:
+                                    try {
+                                        value = Double.parseDouble(cell.getStringCellValue().trim());
+                                    } catch (NumberFormatException e) {
+                                        continue; // Пропускаем ячейки с некорректными числами
+                                    }
+                                    break;
+                                case FORMULA:
+                                    CellType ct = cell.getCachedFormulaResultType();
+                                    if (ct == CellType.NUMERIC) {
+                                        value = cell.getNumericCellValue();
+                                    } else {
+                                        continue;
+                                    }
+                                    break;
+                                default:
+                                    continue;
+                            }
+
+                            columns.get(colName).add(value);
                         }
                     }
                 }
-                if (!values.isEmpty()) {
-                    result.put(sheet.getSheetName(), values);
-                }
+
+                result.put(sheet.getSheetName(), columns);
             }
         }
         return result;
     }
-
-    public static void exportToExcel(Map<String, Map<String, Object>> stats, String outputPath) throws IOException {
+    public static void exportSingleSheetStats(Map<String, Object> stats, String outputPath) throws IOException {
         Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Статистика");
 
-        for (Map.Entry<String, Map<String, Object>> entry : stats.entrySet()) {
-            Sheet sheet = workbook.createSheet(entry.getKey());
-            int rowIdx = 0;
+        int rowIdx = 0;
+        for (Map.Entry<String, Object> entry : stats.entrySet()) {
+            Row row = sheet.createRow(rowIdx++);
+            row.createCell(0).setCellValue(entry.getKey());
+            row.createCell(1).setCellValue(entry.getValue().toString());
+        }
 
-            for (Map.Entry<String, Object> stat : entry.getValue().entrySet()) {
-                Row row = sheet.createRow(rowIdx++);
-                row.createCell(0).setCellValue(stat.getKey());
-                row.createCell(1).setCellValue(stat.getValue().toString());
-            }
+        try (FileOutputStream fos = new FileOutputStream(outputPath)) {
+            workbook.write(fos);
+        }
+        workbook.close();
+    }
+
+    public static void exportCovarianceStats(Map<String, Object> stats, String outputPath) throws IOException {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Ковариации");
+
+        int rowIdx = 0;
+        for (Map.Entry<String, Object> entry : stats.entrySet()) {
+            Row row = sheet.createRow(rowIdx++);
+            row.createCell(0).setCellValue(entry.getKey());
+            row.createCell(1).setCellValue(entry.getValue().toString());
+        }
+
+        try (FileOutputStream fos = new FileOutputStream(outputPath)) {
+            workbook.write(fos);
+        }
+        workbook.close();
+    }
+
+    public static void exportToExcel(Map<String, Object> stats, Map<String, Object> covarianceStats, String outputPath) throws IOException {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Статистика");
+
+        int rowIdx = 0;
+        for (Map.Entry<String, Object> entry : stats.entrySet()) {
+            Row row = sheet.createRow(rowIdx++);
+            row.createCell(0).setCellValue(entry.getKey());
+            row.createCell(1).setCellValue(entry.getValue().toString());
+        }
+
+        for (Map.Entry<String, Object> entry : covarianceStats.entrySet()) {
+            Row row = sheet.createRow(rowIdx++);
+            row.createCell(0).setCellValue(entry.getKey());
+            row.createCell(1).setCellValue(entry.getValue().toString());
         }
 
         try (FileOutputStream fos = new FileOutputStream(outputPath)) {

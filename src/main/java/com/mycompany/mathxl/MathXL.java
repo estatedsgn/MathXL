@@ -10,11 +10,8 @@ package com.mycompany.mathxl;
  */
 
 
+
 import com.mycompany.mathxl.view.StatsView;
-import com.mycompany.mathxl.controller.AppController;
-
-
-
 
 import javax.swing.*;
 
